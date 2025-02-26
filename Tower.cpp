@@ -50,7 +50,7 @@ double Tower::calculateSectionArea(int sectionIndex) {
 	}
 	else {
 		//calculating the total area of the cone
-		a1 = M_PI * Rin * h;
+		a1 = M_PI * Rin * l1;
 
 		//calculating the hypotenus of the top section of the cone
 		l2 = sqrt(pow((h - di), 2) + pow(Ri, 2));

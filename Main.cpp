@@ -11,12 +11,25 @@ Optimizer optimizer(TowerObjectiveFunction);
 CSVCreator writer("optimalTower.csv");
 
 double R0 = 39.3;
-double Rm = 27.4;
+double Rm = 39.3;
+
+//Creating the frustum heights array
+int N = 35; //the number of points
+double maxHeight = 36.5;
+double dy = maxHeight / (N - 1);
+vector<double> frustumHeights;
 
 int main() {	
 
+	//Initializing the frustum heights array
+	for (int i = 0; i < N; i++) {
+		frustumHeights.push_back(i * dy);
+	}
+	
+
+
 	//Launching the optimizer 
-	vector<double> optimalRadii = optimizer.pso(9,1000,1000,20,40); //Getting the optimal results
+	vector<double> optimalRadii = optimizer.pso(N-2,10000,1000,20,40); //Getting the optimal results
 	optimalRadii.insert(optimalRadii.begin(), R0); //Adding R0 and Rm
 	optimalRadii.push_back(Rm);
 	vector<double> Frustums = testTower.getFrustumHeights();
@@ -59,18 +72,18 @@ int main() {
 double TowerObjectiveFunction(vector<double> x){
 
 	//fixing the optimization parameters
-	vector<double> frustumHeigths = { 0.0, 3.6, 7.3, 10.9, 14.6, 18.2, 21.9, 25.5, 29.1, 32.8, 36.5 };
-	vector<double> sectionRadii(frustumHeigths.size());
+	//vector<double> frustumHeigths = { 0.0, 3.6, 7.3, 10.9, 14.6, 18.2, 21.9, 25.5, 29.1, 32.8, 36.5 };
+	vector<double> sectionRadii(frustumHeights.size());
 	double fixedVolume = 130000;
-	double alpha = 1;
-	double beta = 50;
-	double sigma = 1000;
-	double objective_std_deviation = 3;
+	double alpha = 1; //volume
+	double beta = 50; //std deviation
+	double sigma = 1000; //curve control
+	double objective_std_deviation = 1;
 
 
 
-	if (x.size() < frustumHeigths.size()-2) {
-		cerr << "Please input a vector of" << frustumHeigths.size()-2 <<  " points \n";
+	if (x.size() < frustumHeights.size()-2) {
+		cerr << "Please input a vector of" << frustumHeights.size()-2 <<  " points \n";
 		return 0;
 	}
 
@@ -104,7 +117,7 @@ double TowerObjectiveFunction(vector<double> x){
 				curvePenalty += sigma * pow(sectionRadii[i] - sectionRadii[i + 1],2);
 			}
 		}
-		else if(i >= sectionRadii.size() / 2) {
+		else if(i > sectionRadii.size() / 2) {
 			if (sectionRadii[i] > sectionRadii[i + 1]) {
 				curvePenalty += sigma * pow(sectionRadii[i] - sectionRadii[i + 1], 2);
 			}
@@ -113,7 +126,7 @@ double TowerObjectiveFunction(vector<double> x){
 
 
 	testTower.setSectionRadii(sectionRadii);
-	testTower.setFrustumHeigths(frustumHeigths);
+	testTower.setFrustumHeigths(frustumHeights);
 	double totalArea = testTower.calculateTotalArea();
 	double totalVolume = testTower.calculateTotalVolume();
 
