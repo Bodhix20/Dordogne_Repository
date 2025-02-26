@@ -11,10 +11,10 @@ Optimizer optimizer(TowerObjectiveFunction);
 CSVCreator writer("optimalTower.csv");
 
 double R0 = 39.3;
-double Rm = 39.3;
+double Rm = 27.4;
 
 //Creating the frustum heights array
-int N = 35; //the number of points
+int N = 3; //the number of points
 double maxHeight = 36.5;
 double dy = maxHeight / (N - 1);
 vector<double> frustumHeights;
