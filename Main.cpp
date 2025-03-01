@@ -10,11 +10,11 @@ Tower testTower;
 Optimizer optimizer(TowerObjectiveFunction); 
 CSVCreator writer("optimalTower.csv");
 
-double R0 = 39.3;
-double Rm = 39.3;
+//double R0 = 39.3;
+//double Rm = 39.3;
 
 //Creating the frustum heights array
-int N = 35; //the number of points
+int N = 11; //the number of points
 double maxHeight = 36.5;
 double dy = maxHeight / (N - 1);
 vector<double> frustumHeights;
@@ -24,14 +24,11 @@ int main() {
 	//Initializing the frustum heights array
 	for (int i = 0; i < N; i++) {
 		frustumHeights.push_back(i * dy);
-	}
-	
+	}	
 
 
 	//Launching the optimizer 
-	vector<double> optimalRadii = optimizer.pso(N-2,10000,1000,20,40); //Getting the optimal results
-	optimalRadii.insert(optimalRadii.begin(), R0); //Adding R0 and Rm
-	optimalRadii.push_back(Rm);
+	vector<double> optimalRadii = optimizer.pso(N,500,1000,20,40); //Getting the optimal results
 	vector<double> Frustums = testTower.getFrustumHeights();
 	writer.generateCSV(optimalRadii, Frustums); //Generating the csv file
 
@@ -82,17 +79,15 @@ double TowerObjectiveFunction(vector<double> x){
 
 
 
-	if (x.size() < frustumHeights.size()-2) {
-		cerr << "Please input a vector of" << frustumHeights.size()-2 <<  " points \n";
+	if (x.size() < frustumHeights.size()) {
+		cerr << "Please input a vector of" << frustumHeights.size() <<  " points \n";
 		return 0;
 	}
+		
 
-
-	sectionRadii[0] = R0;
-	for (int i = 1; i < sectionRadii.size() - 1; i++) {
-		sectionRadii[i] = x[i - 1];
-	}
-	sectionRadii[sectionRadii.size() -1] = Rm;
+	sectionRadii = x;
+	
+	
 
 	//calculating the standard deviation
 	double sum = 0.0;
@@ -117,7 +112,7 @@ double TowerObjectiveFunction(vector<double> x){
 				curvePenalty += sigma * pow(sectionRadii[i] - sectionRadii[i + 1],2);
 			}
 		}
-		else if(i > sectionRadii.size() / 2) {
+		else if(i >= sectionRadii.size() / 2) {
 			if (sectionRadii[i] > sectionRadii[i + 1]) {
 				curvePenalty += sigma * pow(sectionRadii[i] - sectionRadii[i + 1], 2);
 			}
