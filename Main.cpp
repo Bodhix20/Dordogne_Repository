@@ -18,13 +18,20 @@ double Rm = 27.4;
 double maxHeight = 36.5;
 
 
+
 int main() {	
 
+	//Optimization variables
+	double dimension = 9;
+	double swarm_size = 1000;
+	double max_iter = 20;
+	double lower_bound = 20;
+	double uper_bound = 40;
 
 	//Launching the optimizer 
 	auto start = std::chrono::high_resolution_clock::now(); //starting the clock
-	
-	vector<double> optimalHeights = optimizer.pso(9,100,1000,0,maxHeight); //Getting the optimal results
+
+	vector<double> optimalHeights = optimizer.pso(dimension,swarm_size,max_iter,lower_bound,uper_bound); //Getting the optimal results
 	
 	auto stop = std::chrono::high_resolution_clock::now();// Stop measuring time
 	optimalHeights.insert(optimalHeights.begin(), 0); //Adding 0 and maxHeight
@@ -36,11 +43,16 @@ int main() {
 
 	vector<double> Frustums = testTower.getFrustumHeights();
 
+	writer.generateCSV(Radii, optimalHeights); //Generating the csv file
 
-	std::cout << "Calculation time: " << durationMs.count() << " ms" << "\n";
+	//Displaying the analysis data
+	cout << "\nAnalysis data : \n";
+	cout << "Calculation time: " << durationMs.count() << " ms" << "\n";
+	cout << "Dimension : " << dimension << "\n" << "Swarm_size : " << swarm_size << "\n" << "Max iterations : " << max_iter << "\n"
+		<< "Bounds : " << "[" << lower_bound << " ; " << uper_bound << "] \n";
 
 	//Displaying the optimal solution
-	cout << "\n\n" << "Optimal solution : \n";
+	cout << "\n" << "Optimal solution : \n";
 
 	for (int i = 0; i < Radii.size(); i++) {
 		cout << "R" << i << " : " << Radii[i] << "\n";
