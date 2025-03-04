@@ -15,7 +15,7 @@ double R0 = 39.3;
 double Rm = 39.3;
 
 //Creating the frustum heights array
-int N = 3; //the number of points
+int N = 30; //the number of points
 double maxHeight = 50;
 double dy = maxHeight / (N - 1);
 vector<double> frustumHeights;
@@ -26,7 +26,7 @@ int main() {
 	//Optimization variables
 	double dimension = N - 2;
 	double swarm_size = 1000;
-	double max_iter = 20;
+	double max_iter = 5000;
 	double lower_bound = 20;
 	double uper_bound = 40;
 
