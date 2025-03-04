@@ -1,0 +1,19 @@
+Analysis data :
+Calculation time: 157 ms
+Dimension : 1
+Swarm_size : 1000
+Max iterations : 20
+Bounds : [20 ; 40]
+
+Optimal solution :
+R0 : 39.3
+R1 : 24.4357
+R2 : 27.4
+
+h0 : 0
+h1 : 25
+h2 : 50
+
+Total area : 9660.39m^2
+Total volume : 130001m^3
+Standard deviation : 7.86708
