@@ -11,11 +11,11 @@ Tower testTower;
 Optimizer optimizer(TowerObjectiveFunction); 
 CSVCreator writer("optimalTower.csv");
 
-double R0 = 39.3;
-double Rm = 27.4;
+//double R0 = 39.3;
+//double Rm = 27.4;
 
 //Creating the frustum heights array
-double maxHeight = 36.5;
+double maxHeight = 50;
 
 
 
@@ -24,9 +24,9 @@ int main() {
 	//Optimization variables
 	double dimension = 9;
 	double swarm_size = 1000;
-	double max_iter = 20;
-	double lower_bound = 20;
-	double uper_bound = 40;
+	double max_iter = 2000;
+	double lower_bound = 0;
+	double uper_bound = maxHeight;
 
 	//Launching the optimizer 
 	auto start = std::chrono::high_resolution_clock::now(); //starting the clock
@@ -34,10 +34,10 @@ int main() {
 	vector<double> optimalHeights = optimizer.pso(dimension,swarm_size,max_iter,lower_bound,uper_bound); //Getting the optimal results
 	
 	auto stop = std::chrono::high_resolution_clock::now();// Stop measuring time
+
 	optimalHeights.insert(optimalHeights.begin(), 0); //Adding 0 and maxHeight
 	optimalHeights.push_back(maxHeight);
 	vector<double> Radii = testTower.getSectionRadii();
-	writer.generateCSV(Radii, optimalHeights); //Generating the csv file
 	
 	auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);// Calculate duration
 
@@ -88,11 +88,11 @@ int main() {
 double TowerObjectiveFunction(vector<double> x){
 
 	//fixing the optimization parameters
-	vector<double> sectionRadii = { 39.3, 39, 38, 37, 36, 35, 34, 32, 30, 28, 27.4 };
+	vector<double> sectionRadii = { 39.3, 35, 30, 29, 28, 27, 24, 24, 23, 25, 27.4 };
 	vector<double> sectionHeight(sectionRadii.size());
 	double fixedVolume = 130000;
 	double alpha = 1; //volume
-	double beta = 50; //height penalty
+	double beta = 5000; //height penalty
 	double objective_std_deviation = 1;
 
 
