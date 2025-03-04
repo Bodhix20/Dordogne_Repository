@@ -1,6 +1,7 @@
 #include "Tower.h"
 #include "csvCreator.h"
 #include "Optimizer.h"
+#include <chrono>
 
 // declaring functions that ill appear later
 double TowerObjectiveFunction(vector<double> x);
@@ -21,11 +22,22 @@ int main() {
 
 
 	//Launching the optimizer 
+	auto start = std::chrono::high_resolution_clock::now(); //starting the clock
+	
 	vector<double> optimalHeights = optimizer.pso(9,100,1000,0,maxHeight); //Getting the optimal results
+	
+	auto stop = std::chrono::high_resolution_clock::now();// Stop measuring time
 	optimalHeights.insert(optimalHeights.begin(), 0); //Adding 0 and maxHeight
 	optimalHeights.push_back(maxHeight);
 	vector<double> Radii = testTower.getSectionRadii();
 	writer.generateCSV(Radii, optimalHeights); //Generating the csv file
+	
+	auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);// Calculate duration
+
+	vector<double> Frustums = testTower.getFrustumHeights();
+
+
+	std::cout << "Calculation time: " << durationMs.count() << " ms" << "\n";
 
 	//Displaying the optimal solution
 	cout << "\n\n" << "Optimal solution : \n";
