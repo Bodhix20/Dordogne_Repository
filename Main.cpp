@@ -16,7 +16,7 @@ CSVCreator writer("optimalTower.csv");
 
 //Creating the frustum heights array
 int N = 11; //the number of points
-double maxHeight = 36.5;
+double maxHeight = 50;
 double dy = maxHeight / (N - 1);
 vector<double> frustumHeights;
 
