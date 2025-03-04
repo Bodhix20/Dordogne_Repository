@@ -24,9 +24,9 @@ vector<double> frustumHeights;
 int main() {	
 
 	//Optimization variables
-	double dimension = N - 2;
+	double dimension = N ;
 	double swarm_size = 1000;
-	double max_iter = 20;
+	double max_iter = 1000;
 	double lower_bound = 20;
 	double uper_bound = 40;
 
