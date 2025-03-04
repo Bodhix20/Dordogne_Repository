@@ -16,23 +16,29 @@ double Rm = 27.4;
 
 //Creating the frustum heights array
 int N = 3; //the number of points
-double maxHeight = 36.5;
+double maxHeight = 50;
 double dy = maxHeight / (N - 1);
 vector<double> frustumHeights;
 
+
 int main() {	
+
+	//Optimization variables
+	double dimension = N - 2;
+	double swarm_size = 1000;
+	double max_iter = 20;
+	double lower_bound = 20;
+	double uper_bound = 40;
 
 	//Initializing the frustum heights array
 	for (int i = 0; i < N; i++) {
 		frustumHeights.push_back(i * dy);
 	}
-	
-
 
 	//Launching the optimizer 
 	auto start = std::chrono::high_resolution_clock::now(); //starting the clock
 
-	vector<double> optimalRadii = optimizer.pso(N-2,10000,1000,20,40); //Getting the optimal results
+	vector<double> optimalRadii = optimizer.pso(dimension,swarm_size,max_iter,lower_bound,uper_bound); //Getting the optimal results
 	
 	auto stop = std::chrono::high_resolution_clock::now();// Stop measuring time
 	
@@ -45,11 +51,14 @@ int main() {
 
 	writer.generateCSV(optimalRadii, Frustums); //Generating the csv file
 
-
-	std::cout << "Calculation time: " << durationMs.count() << " ms" << "\n";
+	//Displaying the analysis data
+	cout << "\nAnalysis data : \n";
+	cout << "Calculation time: " << durationMs.count() << " ms" << "\n";
+	cout << "Dimension : " << dimension << "\n" << "Swarm_size : " << swarm_size << "\n" << "Max iterations : " << max_iter << "\n"
+		<< "Bounds : " << "[" << lower_bound << " ; " << uper_bound << "] \n";
 
 	//Displaying the optimal solution
-	cout << "\n\n" << "Optimal solution : \n";
+	cout << "\n" << "Optimal solution : \n";
 
 	for (int i = 0; i < optimalRadii.size(); i++) {
 		cout << "R" << i << " : " << optimalRadii[i] << "\n";
