@@ -12,29 +12,31 @@ Optimizer optimizer(TowerObjectiveFunction);
 CSVCreator writer("optimalTower.csv");
 
 double R0 = 39.3;
-double Rm = 39.3;
+double Rm = 27.4;
 
 //Creating the frustum heights array
-int N = 30; //the number of points
-double maxHeight = 50;
-double dy = maxHeight / (N - 1);
-vector<double> frustumHeights;
+int N = 11; //the number of points
+double maxHeight = 36.5;
+//double dy = maxHeight / (N - 1);
+//vector<double> frustumHeights;
 
 
 int main() {	
 
 	//Optimization variables
 	double dimension = N - 2;
-	double swarm_size = 1000;
-	double max_iter = 5000;
+	double swarm_size = 50;
+	double max_iter = 500;
 	double lower_bound = 20;
 	double uper_bound = 40;
 
 	//Initializing the frustum heights array
+	/*
 	for (int i = 0; i < N; i++) {
 		frustumHeights.push_back(i * dy);
 	}
 
+	*/
 	//Launching the optimizer 
 	auto start = std::chrono::high_resolution_clock::now(); //starting the clock
 
@@ -94,9 +96,9 @@ int main() {
 double TowerObjectiveFunction(vector<double> x){
 
 	//fixing the optimization parameters
-	//vector<double> frustumHeigths = { 0.0, 3.6, 7.3, 10.9, 14.6, 18.2, 21.9, 25.5, 29.1, 32.8, 36.5 };
+	vector<double> frustumHeights = { 0.0, 3.6, 7.3, 10.9, 14.6, 18.2, 21.9, 25.5, 29.1, 32.8, 36.5 };
 	vector<double> sectionRadii(frustumHeights.size());
-	double fixedVolume = 130000;
+	double fixedVolume = 70320;
 	double alpha = 1; //volume
 	double beta = 50; //std deviation
 	double sigma = 1000; //curve control
@@ -158,7 +160,7 @@ double TowerObjectiveFunction(vector<double> x){
 	//+ beta * pow(std_deviation - objective_std_deviation,2)
 
 	//FITNESS FUNCTION-------------------------------------------------------------------------------------------------------------------------------------
-	double fitnessValue = totalArea + alpha * pow(totalVolume - fixedVolume, 2) + curvePenalty + beta * pow(std_deviation - objective_std_deviation, 2);
+	double fitnessValue = totalArea + alpha * pow(totalVolume - fixedVolume, 2) ;
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------
 	
 	//cout << "Fitness value : " << fitnessValue << "\n ";
