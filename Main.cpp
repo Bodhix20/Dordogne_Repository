@@ -12,10 +12,10 @@ Optimizer optimizer(TowerObjectiveFunction);
 CSVCreator writer("optimalTower.csv");
 
 double R0 = 39.3;
-double Rm = 27.4;
+//double Rm = 27.4;
 
 //Creating the frustum heights array
-int N = 3; //the number of points
+int N = 11; //the number of points
 double maxHeight = 50;
 double dy = maxHeight / (N - 1);
 vector<double> frustumHeights;
@@ -24,9 +24,9 @@ vector<double> frustumHeights;
 int main() {	
 
 	//Optimization variables
-	double dimension = N - 2;
+	double dimension = N - 1;
 	double swarm_size = 1000;
-	double max_iter = 20;
+	double max_iter = 1000;
 	double lower_bound = 20;
 	double uper_bound = 40;
 
@@ -43,7 +43,7 @@ int main() {
 	auto stop = std::chrono::high_resolution_clock::now();// Stop measuring time
 	
 	optimalRadii.insert(optimalRadii.begin(), R0); //Adding R0 and Rm
-	optimalRadii.push_back(Rm);	
+		
 	
 	auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);// Calculate duration
 
@@ -97,15 +97,15 @@ double TowerObjectiveFunction(vector<double> x){
 	//vector<double> frustumHeigths = { 0.0, 3.6, 7.3, 10.9, 14.6, 18.2, 21.9, 25.5, 29.1, 32.8, 36.5 };
 	vector<double> sectionRadii(frustumHeights.size());
 	double fixedVolume = 130000;
-	double alpha = 1; //volume
-	double beta = 50; //std deviation
+	double alpha = 10; //volume
+	double beta = 500; //std deviation
 	double sigma = 1000; //curve control
 	double objective_std_deviation = 1;
 
 
 
-	if (x.size() < frustumHeights.size()-2) {
-		cerr << "Please input a vector of" << frustumHeights.size()-2 <<  " points \n";
+	if (x.size() < frustumHeights.size()-1) {
+		cerr << "Please input a vector of" << frustumHeights.size()-1 <<  " points \n";
 		return 0;
 	}
 
@@ -114,7 +114,7 @@ double TowerObjectiveFunction(vector<double> x){
 	for (int i = 1; i < sectionRadii.size() - 1; i++) {
 		sectionRadii[i] = x[i - 1];
 	}
-	sectionRadii[sectionRadii.size() -1] = Rm;
+	
 
 	//calculating the standard deviation
 	double sum = 0.0;
@@ -139,7 +139,7 @@ double TowerObjectiveFunction(vector<double> x){
 				curvePenalty += sigma * pow(sectionRadii[i] - sectionRadii[i + 1],2);
 			}
 		}
-		else if(i > sectionRadii.size() / 2) {
+		else if(i >= sectionRadii.size() / 2) {
 			if (sectionRadii[i] > sectionRadii[i + 1]) {
 				curvePenalty += sigma * pow(sectionRadii[i] - sectionRadii[i + 1], 2);
 			}
