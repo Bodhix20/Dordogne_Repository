@@ -11,8 +11,8 @@ Tower testTower;
 Optimizer optimizer(TowerObjectiveFunction); 
 CSVCreator writer("optimalTower.csv");
 
-//double R0 = 39.3;
-//double Rm = 39.3;
+double R0 = 39.3;
+//double Rm = 27.4;
 
 //Creating the frustum heights array
 int N = 11; //the number of points
@@ -24,7 +24,7 @@ vector<double> frustumHeights;
 int main() {	
 
 	//Optimization variables
-	double dimension = N ;
+	double dimension = N-1 ;
 	double swarm_size = 1000;
 	double max_iter = 1000;
 	double lower_bound = 20;
@@ -45,6 +45,7 @@ int main() {
 	
 	auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);// Calculate duration
 
+	optimalRadii.insert(0,R0); //Adding R0
 	vector<double> Frustums = testTower.getFrustumHeights();
 
 	writer.generateCSV(optimalRadii, Frustums); //Generating the csv file
@@ -102,8 +103,8 @@ double TowerObjectiveFunction(vector<double> x){
 
 
 
-	if (x.size() < frustumHeights.size()) {
-		cerr << "Please input a vector of" << frustumHeights.size() <<  " points \n";
+	if (x.size() < frustumHeights.size()-1) {
+		cerr << "Please input a vector of" << frustumHeights.size()-1 <<  " points \n";
 		return 0;
 	}
 		
