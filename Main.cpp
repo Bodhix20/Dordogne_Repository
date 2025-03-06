@@ -24,14 +24,15 @@ int main() {
 	//Optimization variables
 	double dimension = 9;
 	double swarm_size = 1000;
-	double max_iter = 2000;
+	double tolerance = 0.000001;
+	double max_iter = 500;
 	double lower_bound = 0;
 	double uper_bound = maxHeight;
 
 	//Launching the optimizer 
 	auto start = std::chrono::high_resolution_clock::now(); //starting the clock
 
-	vector<double> optimalHeights = optimizer.pso(dimension,swarm_size,max_iter,lower_bound,uper_bound); //Getting the optimal results
+	vector<double> optimalHeights = optimizer.nelder_mead(dimension,max_iter,tolerance,lower_bound,uper_bound); //Getting the optimal results
 	
 	auto stop = std::chrono::high_resolution_clock::now();// Stop measuring time
 
@@ -48,7 +49,7 @@ int main() {
 	//Displaying the analysis data
 	cout << "\nAnalysis data : \n";
 	cout << "Calculation time: " << durationMs.count() << " ms" << "\n";
-	cout << "Dimension : " << dimension << "\n" << "Swarm_size : " << swarm_size << "\n" << "Max iterations : " << max_iter << "\n"
+	cout << "Dimension : " << dimension << "\n" << "Tolerance : " << tolerance << "\n" << "Max iterations : " << max_iter << "\n"
 		<< "Bounds : " << "[" << lower_bound << " ; " << uper_bound << "] \n";
 
 	//Displaying the optimal solution
@@ -166,7 +167,7 @@ double TowerObjectiveFunction(vector<double> x){
 	double fitnessValue = totalArea + alpha * pow(totalVolume - fixedVolume, 2) + beta * heightPenalty;
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------
 	
-	//cout << "Fitness value : " << fitnessValue << "\n ";
+	cout << "Fitness value : " << fitnessValue << "\n ";
 
 	return fitnessValue ;
 
