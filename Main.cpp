@@ -12,8 +12,8 @@ Tower testTower;
 Optimizer optimizer(TowerObjectiveFunction); 
 CSVCreator writer("optimalTower.csv");
 
-double R0 = 39.3;
-double Rm = 27.4;
+//double R0 = 39.3;
+//double Rm = 27.4;
 
 //Creating the frustum heights array
 int N = 4; //the number of points
@@ -24,8 +24,8 @@ vector<double> frustumHeights;
 
 int main() {	
 	vector<double> xvalues, yvalues, zvalues;
-	double lowerBound = 20;
-	double upperBound = 40;
+	double lowerBound = 0;
+	double upperBound = maxHeight;
 	int resolution = 200; // Adjust for finer or coarser resolution
 
 	//Initializing the frustum heights array
@@ -57,60 +57,72 @@ int main() {
 double TowerObjectiveFunction(vector<double> x){
 
 	//fixing the optimization parameters
-	//vector<double> frustumHeigths = { 0.0, 3.6, 7.3, 10.9, 14.6, 18.2, 21.9, 25.5, 29.1, 32.8, 36.5 };
-	vector<double> sectionRadii(frustumHeights.size());
+	vector<double> sectionRadii = { 39.3, 28, 25, 27.4 };
+	vector<double> sectionHeight(sectionRadii.size());
 	double fixedVolume = 130000;
 	double alpha = 1; //volume
-	double beta = 50; //std deviation
-	double sigma = 1000; //curve control
+	double beta = 5000; //height penalty
 	double objective_std_deviation = 1;
 
 
-	if (x.size() < frustumHeights.size()-2) {
-		cerr << "Please input a vector of" << frustumHeights.size()-2 <<  " points \n";
+
+	if (x.size() < sectionRadii.size() - 2) {
+		cerr << "Please input a vector of" << sectionRadii.size() - 2 << " points \n";
 		return 0;
 	}
 
-
-	sectionRadii[0] = R0;
-	for (int i = 1; i < sectionRadii.size() - 1; i++) {
-		sectionRadii[i] = x[i - 1];
+	sectionHeight[0] = 0;
+	for (int i = 1; i < sectionHeight.size() - 1; i++) {
+		sectionHeight[i] = x[i - 1];
 	}
-	sectionRadii[sectionRadii.size() -1] = Rm;
+	sectionHeight[sectionHeight.size() - 1] = maxHeight;
+
+	//Adding a penalty on the heights of sections
+	double heightPenalty = 0.0;
+	for (int i = 0; i < sectionHeight.size() - 1; i++) {
+		if (sectionHeight[i] >= sectionHeight[i + 1]) heightPenalty += pow(1 + sectionHeight[i] - sectionHeight[i + 1], 2);
+	}
+
+
 
 	//calculating the standard deviation
+	/*
 	double sum = 0.0;
-	for (int i = 0; i < sectionRadii.size(); i++) {
-		sum += sectionRadii[i];
+	for (int i = 0; i < sectionHeight.size(); i++) {
+		sum += sectionHeight[i];
 	}
-	double mean = sum / sectionRadii.size();
+	double mean = sum / sectionHeight.size();
 	sum = 0.0;
-	for (int i = 0; i < sectionRadii.size(); i++) {
-		sum += pow(mean - sectionRadii[i], 2);
+	for (int i = 0; i < sectionHeight.size(); i++) {
+		sum += pow(mean - sectionHeight[i], 2);
 	}
-	double std_deviation = sqrt(sum / ((sectionRadii.size() - 1)));
+	double std_deviation = sqrt(sum / ((sectionHeight.size() - 1)));
+
+	*/
 
 
 	//Calculating the taper to the middle
+	/*
 	double curvePenalty = 0.0;
-	for (int i = 0 ; i < sectionRadii.size()-1; i++) {
+	for (int i = 0 ; i < sectionHeight.size()-1; i++) {
 
-		if (i <= sectionRadii.size() / 2)
+		if (i <= sectionHeight.size() / 2)
 		{
-			if (sectionRadii[i] < sectionRadii[i + 1]) {
-				curvePenalty += sigma * pow(sectionRadii[i] - sectionRadii[i + 1],2);
+			if (sectionHeight[i] < sectionHeight[i + 1]) {
+				curvePenalty += sigma * pow(sectionHeight[i] - sectionHeight[i + 1],2);
 			}
 		}
-		else if(i > sectionRadii.size() / 2) {
-			if (sectionRadii[i] > sectionRadii[i + 1]) {
-				curvePenalty += sigma * pow(sectionRadii[i] - sectionRadii[i + 1], 2);
+		else if(i > sectionHeight.size() / 2) {
+			if (sectionHeight[i] > sectionHeight[i + 1]) {
+				curvePenalty += sigma * pow(sectionHeight[i] - sectionHeight[i + 1], 2);
 			}
 		}
 	}
+	*/
 
 
+	testTower.setFrustumHeigths(sectionHeight);
 	testTower.setSectionRadii(sectionRadii);
-	testTower.setFrustumHeigths(frustumHeights);
 	double totalArea = testTower.calculateTotalArea();
 	double totalVolume = testTower.calculateTotalVolume();
 
@@ -120,11 +132,11 @@ double TowerObjectiveFunction(vector<double> x){
 	//+ beta * pow(std_deviation - objective_std_deviation,2)
 
 	//FITNESS FUNCTION-------------------------------------------------------------------------------------------------------------------------------------
-	double fitnessValue = totalArea + alpha * pow(totalVolume - fixedVolume, 2) + curvePenalty + beta * pow(std_deviation - objective_std_deviation, 2);
+	double fitnessValue = totalArea + alpha * pow(totalVolume - fixedVolume, 2) + beta * heightPenalty;
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------
-	
+
 	cout << "Fitness value : " << fitnessValue << "\n ";
 
-	return fitnessValue ;
+	return fitnessValue;
 
 }
