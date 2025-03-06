@@ -88,31 +88,27 @@ vector<double> Optimizer::pso(int dim, int swarm_size, int max_iter, double lowe
 
 
 vector<double> Optimizer::nelder_mead(int dim, int max_iter, double tol, double lower_bound, double upper_bound) {
-    // Ojective function check
     if (!objectiveFunction) {
         cerr << "Error: Objective function not set!" << endl;
         return {};
     }
 
-    // Simplex initialization
     vector<vector<double>> simplex(dim + 1, vector<double>(dim));
     vector<double> f_values(dim + 1);
 
-    // Initialization of simplex points (random)
+    // Initialize simplex randomly
     for (int i = 0; i < dim + 1; ++i) {
         for (int j = 0; j < dim; ++j) {
             simplex[i][j] = random_double(lower_bound, upper_bound);
         }
-    }
-
-    // Evaluation of objective function for each submits of the simplex
-    for (int i = 0; i < dim + 1; ++i) {
         f_values[i] = objectiveFunction(simplex[i]);
     }
 
+    const double alpha = 1.0, gamma = 2.0, rho = 0.5, sigma = 0.5;
     int iter = 0;
+
     while (iter < max_iter) {
-        // Order
+        // Sort simplex points by function value
         vector<int> order(dim + 1);
         iota(order.begin(), order.end(), 0);
         sort(order.begin(), order.end(), [&](int i, int j) {
@@ -126,7 +122,7 @@ vector<double> Optimizer::nelder_mead(int dim, int max_iter, double tol, double 
             sorted_f_values[i] = f_values[order[i]];
         }
 
-        // 
+        // Compute centroid (excluding worst point)
         vector<double> centroid(dim, 0.0);
         for (int i = 0; i < dim; ++i) {
             for (int j = 0; j < dim; ++j) {
@@ -137,56 +133,59 @@ vector<double> Optimizer::nelder_mead(int dim, int max_iter, double tol, double 
             centroid[j] /= dim;
         }
 
-        //  (Reflexion) 
-        vector<double> reflected_point(dim);
+        // Reflection
+        vector<double> reflected(dim);
         for (int i = 0; i < dim; ++i) {
-            reflected_point[i] = centroid[i] + (centroid[i] - sorted_simplex[dim][i]);
+            reflected[i] = centroid[i] + alpha * (centroid[i] - sorted_simplex[dim][i]);
         }
+        double reflected_f = objectiveFunction(reflected);
 
-        double reflected_f_value = objectiveFunction(reflected_point);
-
-        if (reflected_f_value < sorted_f_values[dim - 1]) {
-            if (reflected_f_value < sorted_f_values[0]) {
-                vector<double> expanded_point(dim);
+        if (reflected_f < sorted_f_values[dim - 1]) {
+            if (reflected_f < sorted_f_values[0]) {
+                // Expansion
+                vector<double> expanded(dim);
                 for (int i = 0; i < dim; ++i) {
-                    expanded_point[i] = centroid[i] + 2 * (centroid[i] - sorted_simplex[dim][i]);
+                    expanded[i] = centroid[i] + gamma * (reflected[i] - centroid[i]);
                 }
-                double expanded_f_value = objectiveFunction(expanded_point);
-                if (expanded_f_value < reflected_f_value) {
-                    sorted_simplex[dim] = expanded_point;
-                    f_values[dim] = expanded_f_value;
+                double expanded_f = objectiveFunction(expanded);
+                if (expanded_f < reflected_f) {
+                    sorted_simplex[dim] = expanded;
+                    sorted_f_values[dim] = expanded_f;
                 }
                 else {
-                    sorted_simplex[dim] = reflected_point;
-                    f_values[dim] = reflected_f_value;
+                    sorted_simplex[dim] = reflected;
+                    sorted_f_values[dim] = reflected_f;
                 }
             }
             else {
-                sorted_simplex[dim] = reflected_point;
-                f_values[dim] = reflected_f_value;
+                sorted_simplex[dim] = reflected;
+                sorted_f_values[dim] = reflected_f;
             }
         }
         else {
-            vector<double> contracted_point(dim);
+            // Contraction
+            vector<double> contracted(dim);
             for (int i = 0; i < dim; ++i) {
-                contracted_point[i] = centroid[i] + 0.5 * (sorted_simplex[dim][i] - centroid[i]);
+                contracted[i] = centroid[i] + rho * (sorted_simplex[dim][i] - centroid[i]);
             }
-            double contracted_f_value = objectiveFunction(contracted_point);
-            if (contracted_f_value < f_values[dim]) {
-                sorted_simplex[dim] = contracted_point;
-                f_values[dim] = contracted_f_value;
+            double contracted_f = objectiveFunction(contracted);
+
+            if (contracted_f < sorted_f_values[dim]) {
+                sorted_simplex[dim] = contracted;
+                sorted_f_values[dim] = contracted_f;
             }
             else {
+                // Shrink simplex towards best point
                 for (int i = 1; i < dim + 1; ++i) {
                     for (int j = 0; j < dim; ++j) {
-                        sorted_simplex[i][j] = sorted_simplex[0][j] + 0.5 * (sorted_simplex[i][j] - sorted_simplex[0][j]);
+                        sorted_simplex[i][j] = sorted_simplex[0][j] + sigma * (sorted_simplex[i][j] - sorted_simplex[0][j]);
                     }
-                    f_values[i] = objectiveFunction(sorted_simplex[i]);
+                    sorted_f_values[i] = objectiveFunction(sorted_simplex[i]);
                 }
             }
         }
 
-
+        // Check for convergence
         double max_diff = 0.0;
         for (int i = 0; i < dim + 1; ++i) {
             for (int j = 0; j < dim; ++j) {
@@ -194,12 +193,14 @@ vector<double> Optimizer::nelder_mead(int dim, int max_iter, double tol, double 
             }
         }
 
-        if (max_diff < tol) {
+        if (fabs((sorted_f_values[dim] - sorted_f_values[0]) / sorted_f_values[0]) < tol) {
             break;
         }
 
+        simplex = sorted_simplex;
+        f_values = sorted_f_values;
         iter++;
     }
 
-    return simplex[0];
+    return simplex[0];  // Return best solution
 }
