@@ -15,32 +15,33 @@ double R0 = 39.3;
 double Rm = 27.4;
 
 //Creating the frustum heights array
-int N = 11; //the number of points
+int N = 3; //the number of points
 double maxHeight = 36.5;
-//double dy = maxHeight / (N - 1);
-//vector<double> frustumHeights;
+double dy = maxHeight / (N - 1);
+vector<double> frustumHeights;
 
 
 int main() {	
 
 	//Optimization variables
 	double dimension = N - 2;
-	double swarm_size = 50;
+	//double swarm_size = 50;
 	double max_iter = 500;
+	double tolerance = 0.1;
 	double lower_bound = 20;
 	double uper_bound = 40;
 
 	//Initializing the frustum heights array
 	/*
+
+	*/
 	for (int i = 0; i < N; i++) {
 		frustumHeights.push_back(i * dy);
 	}
-
-	*/
 	//Launching the optimizer 
 	auto start = std::chrono::high_resolution_clock::now(); //starting the clock
 
-	vector<double> optimalRadii = optimizer.pso(dimension,swarm_size,max_iter,lower_bound,uper_bound); //Getting the optimal results
+	vector<double> optimalRadii = optimizer.nelder_mead(dimension,max_iter,tolerance,lower_bound,uper_bound); //Getting the optimal results
 	
 	auto stop = std::chrono::high_resolution_clock::now();// Stop measuring time
 
@@ -56,7 +57,7 @@ int main() {
 	//Displaying the analysis data
 	cout << "\nAnalysis data : \n";
 	cout << "Calculation time: " << durationMs.count() << " ms" << "\n";
-	cout << "Dimension : " << dimension << "\n" << "Swarm_size : " << swarm_size << "\n" << "Max iterations : " << max_iter << "\n"
+	cout << "Dimension : " << dimension << "\n" << "Tolerance : " << tolerance << "\n" << "Max iterations : " << max_iter << "\n"
 		<< "Bounds : " << "[" << lower_bound << " ; " << uper_bound << "] \n";
 
 	//Displaying the optimal solution
@@ -96,7 +97,7 @@ int main() {
 double TowerObjectiveFunction(vector<double> x){
 
 	//fixing the optimization parameters
-	vector<double> frustumHeights = { 0.0, 3.6, 7.3, 10.9, 14.6, 18.2, 21.9, 25.5, 29.1, 32.8, 36.5 };
+	//vector<double> frustumHeights = { 0.0, 3.6, 7.3, 10.9, 14.6, 18.2, 21.9, 25.5, 29.1, 32.8, 36.5 };
 	vector<double> sectionRadii(frustumHeights.size());
 	double fixedVolume = 70320;
 	double alpha = 1; //volume
@@ -163,7 +164,7 @@ double TowerObjectiveFunction(vector<double> x){
 	double fitnessValue = totalArea + alpha * pow(totalVolume - fixedVolume, 2) ;
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------
 	
-	//cout << "Fitness value : " << fitnessValue << "\n ";
+	cout << "Fitness value : " << fitnessValue << "\n ";
 
 	return fitnessValue ;
 
