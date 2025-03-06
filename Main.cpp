@@ -12,11 +12,11 @@ Optimizer optimizer(TowerObjectiveFunction);
 CSVCreator writer("optimalTower.csv");
 
 double R0 = 39.3;
-double Rm = 27.4;
+//double Rm = 27.4;
 
 //Creating the frustum heights array
-int N = 3; //the number of points
-double maxHeight = 36.5;
+int N = 11; //the number of points
+double maxHeight = 50;
 double dy = maxHeight / (N - 1);
 vector<double> frustumHeights;
 
@@ -24,10 +24,10 @@ vector<double> frustumHeights;
 int main() {	
 
 	//Optimization variables
-	double dimension = N - 2;
+	double dimension = N - 1;
 	//double swarm_size = 50;
 	double max_iter = 500;
-	double tolerance = 0.1;
+	double tolerance = 0.000001;
 	double lower_bound = 20;
 	double uper_bound = 40;
 
@@ -46,7 +46,7 @@ int main() {
 	auto stop = std::chrono::high_resolution_clock::now();// Stop measuring time
 
 	optimalRadii.insert(optimalRadii.begin(), R0); //Adding R0 and Rm
-	optimalRadii.push_back(Rm);
+	//optimalRadii.push_back(Rm);
 	
 	auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);// Calculate duration
 
@@ -99,7 +99,7 @@ double TowerObjectiveFunction(vector<double> x){
 	//fixing the optimization parameters
 	//vector<double> frustumHeights = { 0.0, 3.6, 7.3, 10.9, 14.6, 18.2, 21.9, 25.5, 29.1, 32.8, 36.5 };
 	vector<double> sectionRadii(frustumHeights.size());
-	double fixedVolume = 70320;
+	double fixedVolume = 130000;
 	double alpha = 1; //volume
 	double beta = 50; //std deviation
 	double sigma = 1000; //curve control
@@ -117,7 +117,7 @@ double TowerObjectiveFunction(vector<double> x){
 	for (int i = 1; i < sectionRadii.size() - 1; i++) {
 		sectionRadii[i] = x[i - 1];
 	}
-	sectionRadii[sectionRadii.size() -1] = Rm;
+	//sectionRadii[sectionRadii.size() -1] = Rm;
 
 	//calculating the standard deviation
 	double sum = 0.0;
@@ -161,7 +161,7 @@ double TowerObjectiveFunction(vector<double> x){
 	//+ beta * pow(std_deviation - objective_std_deviation,2)
 
 	//FITNESS FUNCTION-------------------------------------------------------------------------------------------------------------------------------------
-	double fitnessValue = totalArea + alpha * pow(totalVolume - fixedVolume, 2) ;
+	double fitnessValue = totalArea + alpha * pow(totalVolume - fixedVolume, 2) + beta * pow(std_deviation - objective_std_deviation, 2) + curvePenalty;
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------
 	
 	cout << "Fitness value : " << fitnessValue << "\n ";
