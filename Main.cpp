@@ -2,6 +2,7 @@
 #include "csvCreator.h"
 #include "Optimizer.h"
 #include <chrono>
+#include <fstream>
 
 // declaring functions that ill appear later
 double TowerObjectiveFunction(vector<double> x);
@@ -15,79 +16,41 @@ double R0 = 39.3;
 double Rm = 27.4;
 
 //Creating the frustum heights array
-int N = 3; //the number of points
+int N = 4; //the number of points
 double maxHeight = 50;
 double dy = maxHeight / (N - 1);
 vector<double> frustumHeights;
 
 
 int main() {	
-
-	//Optimization variables
-	double dimension = N - 2;
-	double swarm_size = 1000;
-	double max_iter = 20;
-	double lower_bound = 20;
-	double uper_bound = 40;
+	vector<double> xvalues, yvalues, zvalues;
+	double lowerBound = 20;
+	double upperBound = 40;
+	int resolution = 200; // Adjust for finer or coarser resolution
 
 	//Initializing the frustum heights array
 	for (int i = 0; i < N; i++) {
 		frustumHeights.push_back(i * dy);
 	}
 
-	//Launching the optimizer 
-	auto start = std::chrono::high_resolution_clock::now(); //starting the clock
+	for (double x1 = lowerBound; x1 <= upperBound; x1 += (upperBound - lowerBound) / resolution) {
+		for (double x2 = lowerBound; x2 <= upperBound; x2 += (upperBound - lowerBound) / resolution) {
+			vector<double> x = { x1, x2 }; // Two variable radii
+			double fValue = TowerObjectiveFunction(x);
 
-	vector<double> optimalRadii = optimizer.pso(dimension,swarm_size,max_iter,lower_bound,uper_bound); //Getting the optimal results
-	
-	auto stop = std::chrono::high_resolution_clock::now();// Stop measuring time
-	
-	optimalRadii.insert(optimalRadii.begin(), R0); //Adding R0 and Rm
-	optimalRadii.push_back(Rm);	
-	
-	auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);// Calculate duration
-
-	vector<double> Frustums = testTower.getFrustumHeights();
-
-	writer.generateCSV(optimalRadii, Frustums); //Generating the csv file
-
-	//Displaying the analysis data
-	cout << "\nAnalysis data : \n";
-	cout << "Calculation time: " << durationMs.count() << " ms" << "\n";
-	cout << "Dimension : " << dimension << "\n" << "Swarm_size : " << swarm_size << "\n" << "Max iterations : " << max_iter << "\n"
-		<< "Bounds : " << "[" << lower_bound << " ; " << uper_bound << "] \n";
-
-	//Displaying the optimal solution
-	cout << "\n" << "Optimal solution : \n";
-
-	for (int i = 0; i < optimalRadii.size(); i++) {
-		cout << "R" << i << " : " << optimalRadii[i] << "\n";
+			xvalues.push_back(x1);
+			yvalues.push_back(x2);
+			zvalues.push_back(fValue);
+		}
 	}
-	cout << "\n";
 
-	for (int i = 0; i < Frustums.size(); i++) {
-		cout << "h" << i << " : " << Frustums[i] << "\n";
+	ofstream file("objective_function_data.csv");
+	file << "x1,x2,z\n";
+	for (size_t i = 0; i < xvalues.size(); i++) {
+		file << xvalues[i] << "," << yvalues[i] << "," << zvalues[i] << "\n";
 	}
-	cout << "\n";
+	file.close();
 
-	testTower.setSectionRadii(optimalRadii);
-	testTower.setFrustumHeigths(Frustums);
-	
-	cout << "Total area : " << testTower.calculateTotalArea() << "m^2 \n";
-	cout << "Total volume : " << testTower.calculateTotalVolume() << "m^3 \n";
-
-	//calculating the standard deviation
-	double sum = 0.0;
-	for (int i = 0; i < optimalRadii.size(); i++) {
-		sum += optimalRadii[i];
-	}
-	double mean = sum / optimalRadii.size();
-	sum = 0.0;
-	for (int i = 0; i < optimalRadii.size(); i++) {
-		sum += pow(mean - optimalRadii[i], 2);
-	}
-	double std_deviation = sqrt(sum / ((optimalRadii.size() - 1)));
-	cout << "Standard deviation : " << std_deviation << "\n";
 }
 
 //objective function to maximize
@@ -101,7 +64,6 @@ double TowerObjectiveFunction(vector<double> x){
 	double beta = 50; //std deviation
 	double sigma = 1000; //curve control
 	double objective_std_deviation = 1;
-
 
 
 	if (x.size() < frustumHeights.size()-2) {
@@ -161,7 +123,7 @@ double TowerObjectiveFunction(vector<double> x){
 	double fitnessValue = totalArea + alpha * pow(totalVolume - fixedVolume, 2) + curvePenalty + beta * pow(std_deviation - objective_std_deviation, 2);
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------
 	
-	//cout << "Fitness value : " << fitnessValue << "\n ";
+	cout << "Fitness value : " << fitnessValue << "\n ";
 
 	return fitnessValue ;
 
